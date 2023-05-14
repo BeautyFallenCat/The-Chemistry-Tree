@@ -14,6 +14,7 @@ addLayer("Uni", {
     passiveGeneration() {
         let gain = player.points.log(10)
         if(hasUpgrade('Uni','uni2')) gain = gain.mul(layers.Uni.buyables['uni1'].effect())
+        if(hasUpgrade('Uni','uni3')) gain = gain.mul(layers.Uni.upgrades['uni3'].effect()), gain = gain.mul(layers.Ach.effect())
         return gain
     },
     resource: "宇宙精华", 
@@ -55,15 +56,11 @@ addLayer("Uni", {
                 if(!hasUpgrade(this.layer,this.id)&&!this.canAfford()){return ''}
                 else if(!hasUpgrade(this.layer,this.id)&&this.canAfford()){return {'box-shadow':'inset 0px 0px 5px '+(player.timePlayed%2+5)+'px '+this.color(), 'background-color':'black', 'color':'white', 'height':'130px', 'width':'130px','border-color':'white'}}
                 else return {'background-color':this.color(), 'color':'black', 'border-color':'green', 'box-shadow':'0px 0px 5px '+(player.timePlayed%2+5)+'px '+this.color(), 'height':'130px', 'width':'130px'}
-            }
+            },
         },
         'uni2': {
             title() {return quickColor('['+this.id+']'+'<h3>精华压缩<br>',hasUpgrade(this.layer,this.id)?'green':'')},
             description() {return '解锁精华收集器，升级它能够倍增宇宙精华获取。'},
-            effect() {
-                let eff = player.Uni.points
-                return eff
-            },
             color(){return '#ffffff'},
             canAfford() {return player.Uni.points.gte(this.cost())},
             cost() {return n(50)},
@@ -71,7 +68,26 @@ addLayer("Uni", {
                 if(!hasUpgrade(this.layer,this.id)&&!this.canAfford()){return ''}
                 else if(!hasUpgrade(this.layer,this.id)&&this.canAfford()){return {'box-shadow':'inset 0px 0px 5px '+(player.timePlayed%2+5)+'px '+this.color(), 'background-color':'black', 'color':'white', 'height':'130px', 'width':'130px','border-color':'white'}}
                 else return {'background-color':this.color(), 'color':'black', 'border-color':'green', 'box-shadow':'0px 0px 5px '+(player.timePlayed%2+5)+'px '+this.color(), 'height':'130px', 'width':'130px'}
-            }
+            },
+            unlocked() {return hasUpgrade(this.layer,'uni'+Number(this.id[3]-1))}
+        },
+        'uni3': {
+            title() {return quickColor('['+this.id+']'+'<h3>*精华*<br>',hasUpgrade(this.layer,this.id)?'green':'')},
+            description() {return '该层级的每个升级都会提升精华收益 1.2。同时解锁 '+quickColor('苯','blue')},
+            effect() {
+                let eff = Decimal.pow(1.2,player.Uni.upgrades.length)
+                return eff
+            },
+            effectDisplay() {return '×'+format(layers.Uni.upgrades[this.layer,this.id].effect())+""},
+            color(){return '#ffffff'},
+            canAfford() {return player.Uni.points.gte(this.cost())},
+            cost() {return n(1000)},
+            style() {
+                if(!hasUpgrade(this.layer,this.id)&&!this.canAfford()){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&this.canAfford()){return {'box-shadow':'inset 0px 0px 5px '+(player.timePlayed%2+5)+'px '+this.color(), 'background-color':'black', 'color':'white', 'height':'130px', 'width':'130px','border-color':'white'}}
+                else return {'background-color':this.color(), 'color':'black', 'border-color':'green', 'box-shadow':'0px 0px 5px '+(player.timePlayed%2+5)+'px '+this.color(), 'height':'130px', 'width':'130px'}
+            },
+            unlocked() {return hasUpgrade(this.layer,'uni'+Number(this.id[3]-1))}
         },
     },
     buyables: {
@@ -84,7 +100,7 @@ addLayer("Uni", {
                 return cost
             },
             effect(x){
-                let effect = Decimal.pow(1.5,x)
+                let effect = Decimal.pow(1.3,x)
                 return effect
             },
             buy(){
@@ -93,7 +109,7 @@ addLayer("Uni", {
             },
             style() {
                 if(!this.canAfford()){return {'background-color':'black', 'color':'white','border-color':'grey'}}
-                else return {'background-color':'white', 'color':'black','border-color':'white','box-shadow':'inset 3px 3px 3px #aaaaaa'}
+                else return {'background-color':'white', 'color':'black','border-color':'white','box-shadow':'inset 3px 3px 3px #aaaaaa,0px 0px 10px #ffffff'}
             }
         },
     },
@@ -113,12 +129,12 @@ addLayer("Uni", {
     "Essence":{
         content:[
             ["column", [["raw-html", function() {
-                return ''
+                return 'linear-gradient(to right,white 11%, lightyellow) '
             }
             ], "blank", ["buyable", 'uni1']], {
-                "background-color": "#dec895",
+                "background": "#dec895",
                 color: "black",
-                width: "16vw",
+                width: "48vw",
                 padding: "10px",
                 margin: "0 auto",
                 "height": "250px"
@@ -151,6 +167,85 @@ addNode("P",{
     onClick(){if(player.devSpeed!=1e-300) player.devSpeed = 1e-300
     else player.devSpeed = 1},
     canClick(){return true}
+})
+addLayer("Ach", {
+    name: "⌬", // This is optional, only used in a few places, If absent it just uses the layer id.
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+        feature: 0,
+    }},
+    color: "yellow",
+    resource: "⌬",
+    symbol(){return "⌬"},
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        return new Decimal(1)
+    },
+    effect() {
+        return Decimal.pow(1.1,player.Ach.points)
+    },
+    effectDescription() {
+        return "加速能量生产 "+quickColor("<h2>"+format(layers.Ach.effect().mul(100))+"%","yellow")+""
+    },
+    nodeStyle(){
+        return {
+            "border-color":"yellow",
+            "border-width":"3px",
+            "background": "linear-gradient(135deg,yellow 6%, white 81%)",
+            "height": "70px",
+            "width": "70px",
+        }
+    },
+    achievements: {
+        '0-1-1':{
+            name() {return "环 己 三 烯！"},
+            tooltip() { return '解锁成就层。+1苯'},
+            done() { return hasUpgrade('Uni','uni3')}, 
+            onComplete() {return player.Ach.points = player.Ach.points.add(1)
+            },
+        }
+    },
+    row: 'side', // Row the layer is in on the tree (0 is the first row)
+    layerShown(){return hasUpgrade('Uni','uni3')},
+    tabFormat:{
+        "Pre-Hydrogen":{
+                content:[
+                    "main-display",
+                    "blank",
+                    ['display-text',function(){return '<h2><u><==成就 Part1-前元素周期表 ==>'}],
+                    
+                    ["column", [["raw-html", function() {}],
+                     "blank",['display-text',function(){return '<h3>[阶段0-1]-宇宙精华<br>此阶段的每个成就将会给予 0.01 精华收集器基数'}],
+                    ['achievement','0-1-1']],
+                    {
+                        "color":"#FFFFFF",
+                        "width":"600px",
+                        "border-color":"#FFFFFF",
+                        "border-width":"3px",
+                        "background-color":"#000000",
+                        "background-image":
+                        "linear-gradient(#000 30px,transparent 0),linear-gradient(90deg,white 1px,transparent 0)",
+                        "background-size":"31px 31px,31px 31px",
+                        "background-position"() { return (player.timePlayed)%100+"%"+" "+(player.timePlayed%100)+"%"}
+                    }]
+                ],
+                buttonStyle() {return {"color":"#FFFFFF",
+                "border-radius":"5px",
+                "border-color":"#FFFFFF",
+                "border-width":"2px",
+                "background":"#000000",
+                "background-image":
+                "linear-gradient(#000 15px,transparent 0),linear-gradient(90deg,white 1px,transparent 0)",
+                "background-size":"16px 16px,16px 16px",
+                "box-shadow":"2px 2px 2px white"
+                }}
+            },
+        },
 })
 addLayer("H", {
     name: "氢", // This is optional, only used in a few places, If absent it just uses the layer id.
