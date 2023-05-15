@@ -14,6 +14,7 @@ addLayer("Uni", {
     passiveGeneration() {
         let gain = player.points.log(10)
         if(hasUpgrade('Uni','uni2')) gain = gain.mul(layers.Uni.buyables['uni1'].effect())
+        if(hasUpgrade('Uni','uni5')) gain = gain.mul(layers.Uni.buyables['uni2'].effect())
         if(hasUpgrade('Uni','uni3')) gain = gain.mul(layers.Uni.upgrades['uni3'].effect()), gain = gain.mul(layers.Ach.effect())
         return gain
     },
@@ -89,18 +90,54 @@ addLayer("Uni", {
             },
             unlocked() {return hasUpgrade(this.layer,'uni'+Number(this.id[3]-1))}
         },
+        'uni4': {
+            title() {return quickColor('['+this.id+']'+'<h3>能量收集<br>',hasUpgrade(this.layer,this.id)?'green':'')},
+            description() {return '该层级的每个升级都会提升能量收集速率 2。'},
+            effect() {
+                let eff = Decimal.pow(2,player.Uni.upgrades.length)
+                if(eff.gte(100)) softcap(eff,'root',n(100),3)
+                return eff
+            },
+            effectDisplay() {return '×'+format(layers.Uni.upgrades[this.layer,this.id].effect())+""},
+            color(){return '#ffffff'},
+            canAfford() {return player.Uni.points.gte(this.cost())},
+            cost() {return n(5000)},
+            style() {
+                if(!hasUpgrade(this.layer,this.id)&&!this.canAfford()){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&this.canAfford()){return {'box-shadow':'inset 0px 0px 5px '+(player.timePlayed%2+5)+'px '+this.color(), 'background-color':'black', 'color':'white', 'height':'130px', 'width':'130px','border-color':'white'}}
+                else return {'background-color':this.color(), 'color':'black', 'border-color':'green', 'box-shadow':'0px 0px 5px '+(player.timePlayed%2+5)+'px '+this.color(), 'height':'130px', 'width':'130px'}
+            },
+            unlocked() {return hasUpgrade(this.layer,'uni'+Number(this.id[3]-1))}
+        },
+        'uni5': {
+            title() {return quickColor('['+this.id+']'+'<h3>精华压缩<br>',hasUpgrade(this.layer,this.id)?'green':'')},
+            description() {return '解锁精华倍增器，升级它能够更快倍增宇宙精华获取。'},
+            color(){return '#ffffff'},
+            canAfford() {return player.Uni.points.gte(this.cost())},
+            cost() {return n(20000)},
+            style() {
+                if(!hasUpgrade(this.layer,this.id)&&!this.canAfford()){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&this.canAfford()){return {'box-shadow':'inset 0px 0px 5px '+(player.timePlayed%2+5)+'px '+this.color(), 'background-color':'black', 'color':'white', 'height':'130px', 'width':'130px','border-color':'white'}}
+                else return {'background-color':this.color(), 'color':'black', 'border-color':'green', 'box-shadow':'0px 0px 5px '+(player.timePlayed%2+5)+'px '+this.color(), 'height':'130px', 'width':'130px'}
+            },
+            unlocked() {return hasUpgrade(this.layer,'uni'+Number(this.id[3]-1))}
+        },
     },
     buyables: {
         'uni1': {
             title() {return '<h3>精华收集器 Mk.I<br>'},
-            display() {return '倍增宇宙精华获取。<br>每10个等级效果将获得大幅提升!<br><br>收集器等级：'+getBuyableAmount(this.layer,this.id)+'<br>'+'宇宙精华效率 ×'+format(this.effect())+"<br>费用："+format(this.cost())+" 宇宙精华"},
+            display() {return '倍增宇宙精华获取。<br><br>收集器等级：'+getBuyableAmount(this.layer,this.id)+'<br>'+'宇宙精华效率 ×'+format(this.effect())+quickColor("(基数：×"+format(this.base())+")","red")+"<br>费用："+format(this.cost())+" 宇宙精华"},
             canAfford() {return player.Uni.points.gte(this.cost())},
             cost(x){
                 let cost = Decimal.mul(n(10),Decimal.pow(n(1.01),Decimal.pow(x,2))).mul(Decimal.pow(1.98,x))
                 return cost
             },
+            base(){
+                let base = Decimal.add(1.3,getAchievementAmount(0,1)*0.01)
+                return base
+            },
             effect(x){
-                let effect = Decimal.pow(1.3,x)
+                let effect = Decimal.pow(this.base(),x)
                 return effect
             },
             buy(){
@@ -108,9 +145,35 @@ addLayer("Uni", {
                 setBuyableAmount(this.layer,this.id,getBuyableAmount(this.layer,this.id).add(1))
             },
             style() {
-                if(!this.canAfford()){return {'background-color':'black', 'color':'white','border-color':'grey'}}
+                if(!this.canAfford()){return {'background-color':'black', 'color':'white','border-color':'black'}}
                 else return {'background-color':'white', 'color':'black','border-color':'white','box-shadow':'inset 3px 3px 3px #aaaaaa,0px 0px 10px #ffffff'}
             }
+        },
+        'uni2': {
+            title() {return '<h3>精华倍增器 Mk.II<br>'},
+            display() {return '倍增宇宙精华获取。<br><br>倍增器等级：'+getBuyableAmount(this.layer,this.id)+'<br>'+'宇宙精华效率 ×'+format(this.effect())+quickColor("(基数：×"+format(this.base())+")","red")+"<br>费用："+format(this.cost())+" 宇宙精华"},
+            canAfford() {return player.Uni.points.gte(this.cost())},
+            cost(x){
+                let cost = Decimal.mul(n(1e4),Decimal.pow(n(1.25),Decimal.pow(x,2))).mul(Decimal.pow(4,x))
+                return cost
+            },
+            base(){
+                let base = n(2)
+                return base
+            },
+            effect(x){
+                let effect = Decimal.pow(this.base(),x)
+                return effect
+            },
+            buy(){
+                player.Uni.points = player.Uni.points.sub(this.cost())
+                setBuyableAmount(this.layer,this.id,getBuyableAmount(this.layer,this.id).add(1))
+            },
+            style() {
+                if(!this.canAfford()){return {'background-color':'black', 'color':'white','border-color':'black'}}
+                else return {'background-color':'#FFFFE0', 'color':'black','border-color':'#FFFFE0','box-shadow':'inset 3px 3px 3px #aaaaaa,0px 0px 10px #FFFFE0'}
+            },
+            unlocked() {return hasUpgrade('Uni','uni5')}
         },
     },
     tabFormat:{
@@ -131,7 +194,7 @@ addLayer("Uni", {
             ["column", [["raw-html", function() {
                 return 'linear-gradient(to right,white 11%, lightyellow) '
             }
-            ], "blank", ["buyable", 'uni1']], {
+            ], "blank", ['row',[['buyable','uni1'],['buyable','uni2']]]], {
                 "background": "#dec895",
                 color: "black",
                 width: "48vw",
@@ -208,7 +271,14 @@ addLayer("Ach", {
             done() { return hasUpgrade('Uni','uni3')}, 
             onComplete() {return player.Ach.points = player.Ach.points.add(1)
             },
-        }
+        },
+        '0-1-2':{
+            name() {return "10<sup>4"},
+            tooltip() { return '获得 10000 宇宙精华。+1苯'},
+            done() { return player.Uni.points.gte(10000)}, 
+            onComplete() {return player.Ach.points = player.Ach.points.add(1)
+            },
+        },
     },
     row: 'side', // Row the layer is in on the tree (0 is the first row)
     layerShown(){return hasUpgrade('Uni','uni3')},
@@ -221,7 +291,8 @@ addLayer("Ach", {
                     
                     ["column", [["raw-html", function() {}],
                      "blank",['display-text',function(){return '<h3>[阶段0-1]-宇宙精华<br>此阶段的每个成就将会给予 0.01 精华收集器基数'}],
-                    ['achievement','0-1-1']],
+                    ['row',[["achievement",'0-1-1'],["achievement",'0-1-2']]]
+                    ],
                     {
                         "color":"#FFFFFF",
                         "width":"600px",
@@ -278,7 +349,22 @@ addLayer("H", {
         }
     },
     row: 1, // Row the layer is in on the tree (0 is the first row)
-    layerShown(){return true},
+    layerShown(){return false},
     branches(){return ["Uni"]}
     
 })
+function getAchievementAmount(order1,order2)
+{
+    count = 0
+    for (var i = 0; i< player.Ach.achievements.length; i++)
+    {
+        if(player.Ach.achievements[i][0] == order1&&player.Ach.achievements[i][2] == order2) count++
+    }
+    return count
+}
+function softcap(name,type,start,power)
+{
+    if(type == 'root'){ //根号软上限
+        name = (name.div(start).root(power)).mul(start)
+    }
+}
