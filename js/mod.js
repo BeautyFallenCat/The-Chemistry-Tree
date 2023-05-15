@@ -44,6 +44,7 @@ function getPointGen() {
 
 	let gain = new Decimal(1)
 	if(hasUpgrade('Uni','uni1')) gain = gain.mul(layers.Uni.upgrades['uni1'].effect())
+	if(hasUpgrade('Uni','uni4')) gain = gain.mul(layers.Uni.upgrades['uni4'].effect())
 	return gain
 }
 
@@ -53,6 +54,7 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
+	"结局：2⌬"
 ]
 
 // Determines when the game "ends"
