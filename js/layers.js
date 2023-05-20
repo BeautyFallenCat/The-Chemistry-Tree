@@ -290,7 +290,7 @@ addLayer("Uni", {
             title() {return '<h4>光子光度<br>'},
             display() {if(n(player.Uni.photonsP).gte(7))return '光子溢出<sup>2</sup>延迟开始。<br><br>当前等级：'+getBuyableAmount(this.layer,this.id)+'<br>'+'光子获取速率 ×'+format(this.effect())+quickColor("(基数：×"+format(this.base())+")","red")+"<br>费用："+formatWhole(this.cost())+" 光子精华"
         else return '无线电波3层解锁'},
-            canAfford() {return player.Uni.photonsE.gte(this.cost())&&n(player.Uni.photonsP).gte(6)},
+            canAfford() {return player.Uni.photonsE.gte(this.cost())&&n(player.Uni.photonsP).gte(7)},
             cost(x){
                 let cost = Decimal.pow(2.111,x).add(x*2).floor()
                 return cost
