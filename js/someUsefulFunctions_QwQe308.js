@@ -59,3 +59,9 @@ function quickSUP(str){
 function quickColor(str,color){
     return `<text style='color:${color}'>${str}</text>`
 }
+function quickBigColor(str,color){
+    return `<text style='color:${color}; font-size: 25px; text-shadow: 0px 0px 10px ${color}'>${str}</text>`
+}
+function quickDoubleColor(str,colora,colorb){
+    return `<text style='background-image:linear-gradient(to right, ${colora}, ${colorb}); -webkit-background-clip:text; color: transparent; font-size: 25px; text-shadow: 0px 0px 10px ${colorb}'>${str}</text>`
+}
