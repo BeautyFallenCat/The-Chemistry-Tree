@@ -15,9 +15,9 @@ addLayer("Uni", {
         photonsP: new Decimal(0),
         photonsE: new Decimal(0),
         quarks: new Decimal(0),
-        coloredQuarks: [n(0),n(0),n(0),n(0),n(0),n(0)],
-        coloredQuarksE: [n(0),n(0),n(0),n(0),n(0),n(0)],
-        totalQuarks: n(1),
+        coloredQuarks: [new Decimal(0),new Decimal(0),new Decimal(0),new Decimal(0),new Decimal(0),new Decimal(0)],
+        coloredQuarksE: [new Decimal(0),new Decimal(0),new Decimal(0),new Decimal(0),new Decimal(0),new Decimal(0)],
+        totalQuarks: new Decimal(1),
         feature: 0,
         content: '',
     }},
@@ -93,7 +93,7 @@ addLayer("Uni", {
     clickables: {
         'f': {
             title() {return "粒子生成器<br>"},
-            display() {return "解锁一种全新的基本粒子！<br>下一个粒子: "+quickColor(UNI_PARTICLES[player.Uni.feature]+"<br><br>"+"需要宇宙精华 "+format(UNI_PARTICLES_REQ[player.Uni.feature]) , UNI_PARTICLES_COLOR[player.Uni.feature])+"<br>(解锁夸克实际仅需要10<sup>20</sup>宇宙精华，将在下个版本开放夸克)"},
+            display() {return "解锁一种全新的基本粒子！<br>下一个粒子: "+quickColor(UNI_PARTICLES[player.Uni.feature]+"<br><br>"+"需要宇宙精华 "+format(UNI_PARTICLES_REQ[player.Uni.feature]) , UNI_PARTICLES_COLOR[player.Uni.feature])},
             canClick() {return player.Uni.points.gte(UNI_PARTICLES_REQ[player.Uni.feature])},
             style(){
                 if(layers.Uni.clickables[this.layer,this.id].canClick()) return {'box-shadow':'inset 0px 0px 5px '+(player.timePlayed%2+5)+'px '+UNI_PARTICLES_COLOR[player.Uni.feature], 'background-color':'black', 'color':'white', 'height':'200px', 'width':'200px', 'font-size':'13px' }
@@ -995,7 +995,7 @@ addLayer("Uni", {
     row: 0, // Row the layer is in on the tree (0 is the first row)
     layerShown(){return true},
     update(diff){
-        if(player.Uni.feature >= 1) player.Uni.photons = player.Uni.photons.add(n(diff).mul(layers.Uni.getPhotonGain()).min(player.Uni.photons.add(1).mul(1000)))
+        if(player.Uni.feature >= 1) player.Uni.photons = player.Uni.photons.add(n(diff).mul(layers.Uni.getPhotonGain()).min(player.Uni.photons.add(1).mul(10)))
         if(hasAchievement('Ach','0-3-2')) if(player.Uni.photons.gte(layers.Uni.getPhotonReq())) {player.Uni.photonsP = player.Uni.photonsP.add(1),player.Uni.photonsE = player.Uni.photonsE.add(layers.Uni.getExtraPhotons()[1].mul(player.Uni.photonsP))}
         if(hasMilestone('Uni','ph6')){
             if(layers.Uni.buyables['uni1'].canAfford) buyBuyable('Uni','uni1')
