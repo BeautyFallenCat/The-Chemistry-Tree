@@ -90,10 +90,10 @@ function loadVue() {
 	Vue.component('infobox', {
 		props: ['layer', 'data'],
 		template: `
-		<div class="story instant" v-if="tmp[layer].infoboxes && tmp[layer].infoboxes[data]!== undefined && tmp[layer].infoboxes[data].unlocked" v-bind:style="[{'border-color': tmp[layer].color, 'border-radius': player.infoboxes[layer][data] ? 0 : '8px'}, tmp[layer].infoboxes[data].style]">
-			<button class="story-title" v-bind:style="[{'background-color': tmp[layer].color}, tmp[layer].infoboxes[data].titleStyle]"
+		<div class="story instant" v-if="tmp[layer].infoboxes && tmp[layer].infoboxes[data]!== undefined && tmp[layer].infoboxes[data].unlocked" v-bind:style="[{'border-color': tmp[layer].infoboxes[data].color, 'border-radius': player.infoboxes[layer][data] ? 0 : '8px'}, tmp[layer].infoboxes[data].style]">
+			<button class="story-title" v-bind:style="[{'background-color': tmp[layer].infoboxes[data].color}, tmp[layer].infoboxes[data].titleStyle]"
 				v-on:click="player.infoboxes[layer][data] = !player.infoboxes[layer][data]">
-				<span class="story-toggle">{{player.infoboxes[layer][data] ? "+" : "-"}}</span>
+				<span class="story-toggle">{{player.infoboxes[layer][data] ? "▼" : "▲"}}</span>
 				<span v-html="tmp[layer].infoboxes[data].title ? tmp[layer].infoboxes[data].title : (tmp[layer].name)"></span>
 			</button>
 			<div v-if="!player.infoboxes[layer][data]" class="story-text" v-bind:style="tmp[layer].infoboxes[data].bodyStyle">
@@ -140,12 +140,10 @@ function loadVue() {
 		<div v-if="tmp[layer].challenges && tmp[layer].challenges[data]!== undefined && tmp[layer].challenges[data].unlocked && !(options.hideChallenges && maxedChallenge(layer, [data]) && !inChallenge(layer, [data]))"
 			v-bind:class="['challenge', challengeStyle(layer, data), player[layer].activeChallenge === data ? 'resetNotify' : '']" v-bind:style="tmp[layer].challenges[data].style">
 			<br><h3 v-html="tmp[layer].challenges[data].name"></h3><br><br>
-			<button v-bind:class="{ longUpg: true, can: true, [layer]: true }" v-bind:style="{'border-radius':'50%', 'background-color':'black', 'width':'200px','height':'200px','border-color': tmp[layer].challenges[data].locked? '#444444':tmp[layer].challenges[data].color,'font-size':'100px','color': tmp[layer].challenges[data].locked? '#444444':tmp[layer].challenges[data].color,'box-shadow':'0px 0px 10px 10px inset '+(tmp[layer].challenges[data].locked? '':tmp[layer].challenges[data].color),'transform': 'rotate(0deg)','text-decoration':tmp[layer].challenges[data].locked? 'line-through':'none'}" v-on:click="if(!tmp[layer].challenges[data].locked)startChallenge(layer, data)">{{tmp[layer].challenges[data].text}}<sub>{{tmp[layer].challenges[data].exp}}</sub></button><br><br>
+			<button v-bind:class="{ longUpg: true, can: true, [layer]: true }" v-bind:style="{'border-radius':'50%', 'background-color':(player[layer].activeChallenge == tmp[layer].challenges[data].id)?'white':'black', 'width':'200px','height':'200px','border-color': tmp[layer].challenges[data].locked? '#444444':tmp[layer].challenges[data].color,'font-size':'100px','color': tmp[layer].challenges[data].locked? '#444444':tmp[layer].challenges[data].color,'box-shadow':'0px 0px 10px 10px inset '+(tmp[layer].challenges[data].locked? '':tmp[layer].challenges[data].color),'transform': (player[layer].activeChallenge == tmp[layer].challenges[data].id)?('rotate('+player.timePlayed%10*36+'deg)'):('rotate(0deg)'),'text-decoration':tmp[layer].challenges[data].locked? 'line-through':'none'}" v-on:click="if(!tmp[layer].challenges[data].locked)startChallenge(layer, data)">{{tmp[layer].challenges[data].text}}<sub>{{tmp[layer].challenges[data].exp}}</sub></button><br><br>
 			<span v-if="layers[layer].challenges[data].fullDisplay" v-html="run(layers[layer].challenges[data].fullDisplay, layers[layer].challenges[data])"></span>
 			<span v-else>
 				<span v-html="tmp[layer].challenges[data].challengeDescription"></span><br>
-				Goal:  <span v-if="tmp[layer].challenges[data].goalDescription" v-html="tmp[layer].challenges[data].goalDescription"></span><span v-else>{{format(tmp[layer].challenges[data].goal)}} {{tmp[layer].challenges[data].currencyDisplayName ? tmp[layer].challenges[data].currencyDisplayName : modInfo.pointsName}}</span><br>
-				Reward: <span v-html="tmp[layer].challenges[data].rewardDescription"></span><br>
 				<span v-if="layers[layer].challenges[data].rewardDisplay!==undefined">Currently: <span v-html="(tmp[layer].challenges[data].rewardDisplay) ? (run(layers[layer].challenges[data].rewardDisplay, layers[layer].challenges[data])) : format(tmp[layer].challenges[data].rewardEffect)"></span></span>
 			</span>
 			<node-mark :layer='layer' :data='tmp[layer].challenges[data].marked' :offset="20" :scale="1.5"></node-mark></span>

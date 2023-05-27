@@ -3,8 +3,8 @@ var needCanvasUpdate = true;
 
 // Don't change this
 const TMT_VERSION = {
-	tmtNum: "2.6.4.3",
-	tmtName: "Fixed Reality"
+	tmtNum: "114.514.1919.810",
+	tmtName: ">>><<<"
 }
 
 function getResetGain(layer, useType = null) {
@@ -251,8 +251,7 @@ function startChallenge(layer, x) {
 		Vue.set(player[layer], "activeChallenge", null)
 		} else {
 		enter = true
-	}	
-	doReset(layer, true)
+	}
 	if(enter) {
 		Vue.set(player[layer], "activeChallenge", x)
 		run(layers[layer].challenges[x].onEnter, layers[layer].challenges[x])
@@ -323,6 +322,7 @@ function gameLoop(diff) {
 		clearParticles()
 	}
 	document.getElementById('points').innerHTML = formatHeat(player.points)
+	document.getElementById('overlayThing').innerHTML = tmp.other.oompsMag != 0 ? format(tmp.other.oomps) + " OOM" + (tmp.other.oompsMag < 0 ? "^OOM" : tmp.other.oompsMag > 1 ? "^" + tmp.other.oompsMag : "") + "s" : '+'+formatHeat(getPointGen())+"/sec"
 
 	if (isNaN(diff) || diff < 0) diff = 0
 	if (tmp.gameEnded && !player.keepGoing) {

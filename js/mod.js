@@ -13,7 +13,7 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "ersion [Perturbed Fallen_Cat 1]",
+	num: "ersion [Perturbed Fallen_Cat 2]",
 	name: "Literally nothing",
 }
 
@@ -47,6 +47,8 @@ function getPointGen() {
 	if(hasUpgrade('Uni','uni4')) gain = gain.mul(layers.Uni.upgrades['uni4'].effect())
 	if(player.Uni.feature >= 1) gain = gain.mul(layers.Uni.photonEff())
 	if(player.Uni.feature >= 2) gain = gain.mul(layers.Uni.quarkEff())
+	if(player.Uni.totalQuarks.gte(layers.Uni.quarksBonus[0].start)) gain = gain.mul(layers.Uni.quarksBonus[0].effect())
+	if(getBuyableAmount('Uni','ph5')) gain = gain.mul(buyableEffect('Uni','ph5'))
 	return gain
 }
 
@@ -56,12 +58,12 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-	`结局：11⌬ + 光子共振层达到 微波6层`
+	`结局：29⌬ + 光子共振层达到 红外线10层`
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.Uni.photonsP.gte(14)
+	return player.Uni.photonsP.gte(20)
 }
 
 

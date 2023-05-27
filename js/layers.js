@@ -1,9 +1,9 @@
 const UNI_PARTICLES = ["光子","夸克","电子","质子","中子","玻色子"]
 const UNI_PARTICLES_COLOR = ["#ffffb0","#dd3333","yellow"]
-const UNI_PARTICLES_REQ = [1.5e6,1e21,1e40,1e100]
+const UNI_PARTICLES_REQ = [1.5e6,1e21,1e70,1e100]
 
 const UNI_PHOTONS_ORDER = ["无线电波","微波","红外线","可见光","紫外线","X射线","伽马射线"]
-const UNI_PHOTONS_COLOR = ["#444444","brown"]
+const UNI_PHOTONS_COLOR = ["#444444","brown","red"]
 const UNI_PHOTONS_REQ = [10,25,50,100,160,360,500,2500,7000,14000]
 addLayer("Uni", {
     name: "宇宙", 
@@ -16,7 +16,10 @@ addLayer("Uni", {
         photonsE: new Decimal(0),
         quarks: new Decimal(0),
         coloredQuarks: [n(0),n(0),n(0),n(0),n(0),n(0)],
+        coloredQuarksE: [n(0),n(0),n(0),n(0),n(0),n(0)],
+        totalQuarks: n(1),
         feature: 0,
+        content: '',
     }},
     color: "#FFFFFF",
     requires: new Decimal(10), 
@@ -28,6 +31,7 @@ addLayer("Uni", {
         if(hasAchievement('Ach','0-3-1')) gain = gain.mul(Decimal.pow(2,getAchievementAmount(0,3)))
         if(player.Uni.feature >= 1) gain = gain.mul(layers.Uni.photonEff())
         if(player.Uni.feature >= 2) gain = gain.mul(layers.Uni.quarkEff())
+        if(getBuyableAmount('Uni','ph5')) gain = gain.mul(buyableEffect('Uni','ph5'))
         return gain
     },
     resource: "宇宙精华", 
@@ -41,6 +45,50 @@ addLayer("Uni", {
     },
     gainExp() { 
         return new Decimal(1)
+    },
+    quarksBonus:{
+        0:{
+            desc:'能量获取提升',
+            effect(){return player.Uni.totalQuarks},
+            start: n(10),
+            prev: '×',
+            color: "#FFFFFF"
+        },
+        1:{
+            desc:'光子获取提升',
+            effect(){return player.Uni.totalQuarks.div(100).sqrt()},
+            start: n(100),
+            prev: '×',
+            color: "#ffff88"
+        },
+        2:{
+            desc:'光子溢出<sup>2</sup>指数提升',
+            effect(){return n(0.03)},
+            start: n(1000),
+            prev: '+',
+            color: "orange"
+        },
+        3:{
+            desc:'夸克获取提升',
+            effect(){return player.Uni.totalQuarks.add(1).log(20).sqrt()},
+            start: n(1e6),
+            prev: '×',
+            color: "#dd3333"
+        },
+        4:{
+            desc:'光子获取提升',
+            effect(){return player.Uni.totalQuarks.div(100).sqrt()},
+            start: n(1e12),
+            prev: '×',
+            color: "#FFFFFF"
+        },
+        5:{
+            desc:'光子获取提升',
+            effect(){return player.Uni.totalQuarks.div(100).sqrt()},
+            start: n(1e99),
+            prev: '×',
+            color: "#FFFFFF"
+        },
     },
     clickables: {
         'f': {
@@ -316,6 +364,7 @@ addLayer("Uni", {
             cost() {return n(2)},
             effect() {
                 let eff = player.Uni.quarks.add(10).log(10).add(0.5)
+                if(eff.gte(4)) eff = softcap(eff,'root',n(4),3)
                 return eff
             },
             effectDisplay() {return '×'+format(layers.Uni.upgrades[this.layer,this.id].effect())+""},
@@ -518,6 +567,9 @@ addLayer("Uni", {
             base(){
                 let base = n(2).mul(player.Uni.points.root(20))
                 if(base.gte(20)) base = softcap(base, 'root', 20, 10)
+                if(player.Uni.activeChallenge == 'qk1') base = n(1)
+                if(player.Uni.activeChallenge == 'qk2') base = n(5)
+                if(player.Uni.activeChallenge == 'qk3') base = n(1)
                 return base
             },
             effect(x){
@@ -641,7 +693,7 @@ addLayer("Uni", {
                 if(layers.Uni.buyables[this.layer,this.id].canAfford()) return {'background-color':'#000000', 'color':'white','border-color':'#dd3333','box-shadow':'inset 0px 0px 5px 5px #dd3333', 'height':'200px', 'width':'200px' , 'font-size':'13px' }
                 else return {'height':'200px', 'width':'200px' , 'font-size':'13px'}
             },
-            unlocked() {return hasUpgrade('Uni','qk8')}
+            unlocked() {return hasUpgrade('Uni','qk8')},
         },
         'qk2': {
             title() {return '<h4>夸克复制器<br>'},
@@ -667,7 +719,7 @@ addLayer("Uni", {
                 if(layers.Uni.buyables[this.layer,this.id].canAfford()) return {'background-color':'#000000', 'color':'white','border-color':'#dd3333','box-shadow':'inset 0px 0px 5px 5px #dd3333', 'height':'200px', 'width':'200px' , 'font-size':'13px' }
                 else return {'height':'200px', 'width':'200px' , 'font-size':'13px'}
             },
-            unlocked() {return hasUpgrade('Uni','qk8')}
+            unlocked() {return hasUpgrade('Uni','qk8')},
         },
         
     },
@@ -741,7 +793,36 @@ addLayer("Uni", {
             },
             unlocked() {return hasMilestone(this.layer,'ph'+Number(this.id[2]-1))}
         },
+        'ph7': {
+            requirementDescription() {return quickColor("光子共振层达到 "+getPhotonLayerName(this.req)+" ("+formatWhole(n(player.Uni.photonsP).div(layers.Uni.milestones[this.id].req).mul(100).min(100))+"%)",hasMilestone(this.layer,this.id)?'green':'')},
+            effectDescription(){ return `————————————————————————————————————————————————<br>`+`1.升级 qk4 同样适用于夸克的自动生成速率。`},
+            req: n(19),
+            done() { return player.Uni.photonsP.gte(this.req) },
+            style() {
+                if(!hasMilestone(this.layer,this.id)){ return {'height':'100px','width':'650px','background':`linear-gradient(to right,#999999 ${formatWhole(n(player.Uni.photonsP).div(layers.Uni.milestones[this.id].req).mul(100))}%,grey ${formatWhole(player.Uni.photonsP.div(layers.Uni.milestones[this.id].req).mul(100))}%)`,'border-radius':'5px'}}
+                else return {'background': `repeating-linear-gradient(90deg, brown 0, brown 1px, #001700 0,#001700 10px)`,'background-size':'10px','color':'white','height':'100px','width':'650px','box-shadow':`0px 0px 4px ${player.timePlayed%4+5}px brown`}
+            },
+            unlocked() {return hasMilestone(this.layer,'ph'+Number(this.id[2]-1))}
+        },
     },
+    infoboxes: {
+    'qk1': {
+        title: "夸克共振奖励",
+        body() { 
+            player.Uni.content = ''
+            for(var i = 0; i <= 999; i++){
+                if(player.Uni.totalQuarks.gte(layers.Uni.quarksBonus[i].start)) player.Uni.content += "["+i+"]"+layers.Uni.quarksBonus[i].desc+" "+quickBigColor(layers.Uni.quarksBonus[i].prev+format(layers.Uni.quarksBonus[i].effect()),layers.Uni.quarksBonus[i].color)+"<br>"
+                else {
+                    player.Uni.content += quickColor('下一项夸克共振奖励在'+formatWhole(layers.Uni.quarksBonus[i].start)+'总夸克能量！','#444444')
+                    break
+                }
+            }
+            return player.Uni.content
+        },
+        color(){return '#dd3333'},
+        style(){return {'border-color':'#dd3333'}},
+    },
+},
     tabFormat:{
     "Universe":{
             content:[
@@ -806,11 +887,22 @@ addLayer("Uni", {
             ['row',[['upgrade','qk6'],['upgrade','qk7'],['upgrade','qk8'],['upgrade','qk9'],['upgrade','qk10']]],
             "blank",
             ['row',[['buyable','qk1'],['buyable','qk2']]],
-            'blank',
-            ['challenge','qk1'],
         ],
         buttonStyle() {return {'border-radius':'5px','background': '#dd3333', 'box-shadow': '2px 2px 0px red','border-color':'#dd3333'}},
-        unlocked() {return player.Uni.feature >= 1},
+        unlocked() {return player.Uni.feature >= 2},
+        },
+    "ColoredQuarks":{
+        content:[
+            ['display-text',function(){return quickBigColor("[光子共振层："+getPhotonLayerName(player.Uni.photonsP)+"]",UNI_PHOTONS_COLOR[player.Uni.photonsP.div(10).floor()])}],
+            "blank",
+            ['display-text',function(){return "你的总夸克能量为 "+quickBigColor(formatWhole(player.Uni.totalQuarks),"#dd3333")+"，提供了下面的一系列增益"}],
+            "blank",
+            ["infobox",'qk1'],
+            ['row',[['challenge','qk1'],['challenge','qk2']]],
+            ['row',[['challenge','qk3'],['challenge','qk4']]],
+        ],
+        buttonStyle() {return {'border-radius':'5px','background': '#dd5555', 'box-shadow': '2px 2px 5px red','border-color':'#dd5555'}},
+        unlocked() {return player.Uni.feature >= 2},
         },
     },
     nodeStyle(){
@@ -832,7 +924,9 @@ addLayer("Uni", {
         return eff
     },
     photonBoost(){
-        return Decimal.pow(1.2,player.Uni.photonsP).mul(Decimal.mul(0.4,player.Uni.photonsP.add(1))).mul(2.5)
+        if(player.Uni.activeChallenge == 'qk2') return n(1).div(Decimal.pow(1.2,player.Uni.photonsP).mul(Decimal.mul(1,player.Uni.photonsP.add(1))))
+        else if(player.Uni.activeChallenge == 'qk3') return n(1e-4).div(Decimal.pow(1.2,player.Uni.photonsP).mul(Decimal.mul(4,player.Uni.photonsP.add(1))))
+        else return Decimal.pow(1.2,player.Uni.photonsP).mul(Decimal.mul(0.4,player.Uni.photonsP.add(1))).mul(2.5)
     },
     getPhotonScs(){
         let sc = [n(10),n(100),n(0.4),n(0.2)]
@@ -840,7 +934,10 @@ addLayer("Uni", {
         if(hasMilestone('Uni','ph3')) {sc[0] = sc[0].mul(Decimal.pow(layers.Uni.milestones.ph3.effect())) , sc[1] = sc[1].mul(Decimal.pow(layers.Uni.milestones.ph3.effect()))}
         if(hasMilestone('Uni','ph4')) sc[1] = sc[1].mul(buyableEffect('Uni','ph2'))
         if(hasMilestone('Uni','ph5')) sc[3] = sc[3].add(0.03)
+        if(player.Uni.totalQuarks.gte(layers.Uni.quarksBonus[2].start)) sc[3] = sc[3].add(0.03)
         if(hasUpgrade('Uni','1k5')) {sc[0] = sc[0].mul(layers.Uni.upgrades['qk5'].effect()) , sc[1] = sc[1].mul(layers.Uni.upgrades['qk5'].effect())}
+        else if(player.Uni.activeChallenge == 'qk3') sc[3] = n(0.191981)
+        if(player.Uni.coloredQuarks[2].gte(1)) sc[3] = sc[3].add(0.04)
         return sc
     },
     getPhotonReq(){
@@ -858,6 +955,8 @@ addLayer("Uni", {
         if(hasUpgrade(this.layer,'qk6')) gain = gain.mul(layers.Uni.upgrades['qk6'].effect())
         if(hasUpgrade(this.layer,'qk7')) gain = gain.mul(layers.Uni.upgrades['qk7'].effect())
         if(hasUpgrade(this.layer,'qk9')) gain = gain.mul(4)
+        if(player.Uni.coloredQuarks[0].gte(1)) gain = gain.mul(15)
+        if(player.Uni.totalQuarks.gte(layers.Uni.quarksBonus[1].start)) gain = gain.mul(layers.Uni.quarksBonus[1].effect())
         if(player.Uni.photons.gte(layers.Uni.getPhotonScs()[0])) gain = gain.mul(layers.Uni.getPhotonScs()[2].pow(player.Uni.photons.div(layers.Uni.getPhotonScs()[0]).log(2)).max(hasMilestone('Uni','ph4')?0.5:1e-300).max(hasAchievement('Ach','0-3-3')?1:1e-300))
         if(player.Uni.photons.gte(layers.Uni.getPhotonScs()[1])) gain = gain.mul(layers.Uni.getPhotonScs()[3].pow(player.Uni.photons.div(layers.Uni.getPhotonScs()[1]).log(2)))
         if(hasMilestone('Uni','ph3')) gain = gain.mul(2)
@@ -867,6 +966,8 @@ addLayer("Uni", {
     {
         let extra = [n(0),n(1)]
         if(hasUpgrade('Uni','qk1')) extra[0] = extra[0].add(5)
+        if(player.Uni.activeChallenge == 'qk1') extra[1] = extra[1].div(100)
+        if(hasAchievement('Ach','0-3-5')) extra[1] = extra[1].mul(1.5)
         return extra
     },
     getQuarkGain(){
@@ -877,6 +978,7 @@ addLayer("Uni", {
         if(hasMilestone('Uni','ph6')) gain = gain.mul(2)
         if(getBuyableAmount('Uni','ph4').gte(1)) gain = gain.mul(layers.Uni.buyables['ph4'].effect()).floor()
         if(getBuyableAmount('Uni','qk2').gte(1)) gain = gain.mul(layers.Uni.buyables['qk2'].effect()).floor()
+        if(player.Uni.totalQuarks.gte(layers.Uni.quarksBonus[3].start)) gain = gain.mul(layers.Uni.quarksBonus[3].effect())
         return gain
     },
     getColoredQuarkGain(){
@@ -893,12 +995,24 @@ addLayer("Uni", {
     row: 0, // Row the layer is in on the tree (0 is the first row)
     layerShown(){return true},
     update(diff){
-        if(player.Uni.feature >= 1) player.Uni.photons = player.Uni.photons.add(n(diff).mul(layers.Uni.getPhotonGain()))
+        if(player.Uni.feature >= 1) player.Uni.photons = player.Uni.photons.add(n(diff).mul(layers.Uni.getPhotonGain()).min(player.Uni.photons.add(1).mul(1000)))
         if(hasAchievement('Ach','0-3-2')) if(player.Uni.photons.gte(layers.Uni.getPhotonReq())) {player.Uni.photonsP = player.Uni.photonsP.add(1),player.Uni.photonsE = player.Uni.photonsE.add(layers.Uni.getExtraPhotons()[1].mul(player.Uni.photonsP))}
         if(hasMilestone('Uni','ph6')){
             if(layers.Uni.buyables['uni1'].canAfford) buyBuyable('Uni','uni1')
             if(layers.Uni.buyables['uni2'].canAfford) buyBuyable('Uni','uni2')
         }
+        if(hasAchievement('Ach','0-3-5')){
+            for(var i = 1; i <= 6; i++){
+                buyBuyable('Uni','ph'+i)
+            }
+        }
+        for(var i = 0; i <= 5; i++){
+            if(i == 0)qk = n(1)
+            if(player.Uni.coloredQuarksE[i].lt(player.Uni.coloredQuarks[i].mul(100))) player.Uni.coloredQuarksE[i] = player.Uni.coloredQuarksE[i].add(player.Uni.coloredQuarks[i].mul(diff))
+            qk = qk.mul(player.Uni.coloredQuarksE[i].add(1))
+            if(i == 5) player.Uni.totalQuarks = qk
+        }
+        if(player.Uni.coloredQuarks[1].gte(1)) player.Uni.quarks = player.Uni.quarks.add(layers.Uni.getQuarkGain().mul(0.1).mul(diff).mul(hasMilestone(this.layer,'ph7')?upgradeEffect('Uni','qk4'):1))
     },
     tooltip(){
         let tooltip = '宇宙精华: '+formatWhole(player.Uni.points)+"<br>"
@@ -909,50 +1023,129 @@ addLayer("Uni", {
     resetsNothing() {return true},
     challenges:{
         'qk1':{
-            name() {return "["+this.id+"] 上夸克"+((this.locked())?'(锁定)':(inChallenge(this.layer,this.id)?"("+format(layers.Uni.getColoredQuarkGain()).sub(player.Uni.coloredQuarks[0])+")":"(不活跃)"))},
+            name() {return "["+this.id+"] 上夸克"+((this.locked())?'(锁定)':(player.Uni.activeChallenge == 'qk1'?("("+format(layers.Uni.getColoredQuarkGain().sub(player.Uni.coloredQuarks[this.id[2]-1]))+")"):("(不活跃)")))},
             text() {return "u"},
-            locked() {return player.Uni.quarks.lt(1000)&&!inChallenge(this.layer,this.id)},
+            locked() {return player.Uni.quarks.lt(1000)&&!(player.Uni.activeChallenge == 'qk1')},
             exp: "1",
             color: '#FF2222',
             challengeDescription() {
-                let desc = "↑↑点击夸克图标以开始夸克共振！<br>———————————————————————<br>共振效果：1.光子精华获取变为1/10。<br> 2.光子能量基础强制固定在 ×4。<br><div style='background-color:#FF2222'>夸克共振需求：夸克≥1000</div>"
-                if(!this.locked()) desc += "———————————————————————<br>如果你能在夸克共振中完成夸克坍缩，<br>你将获得上夸克！<br>(获取数量基于光子和光子共振层)<br><div style='background-color:#FF2222'>你拥有 "+formatWhole(player.Uni.coloredQuarks[0])+" 上夸克。<br>加成光子生成速率 ×"+format(this.effect())+"<br>同时生成上夸克能量 +"+formatWhole(player.Uni.coloredQuarks[0])+"/sec。</div>"
+                let desc = "↑↑点击夸克图标以开始夸克共振！<br>———————————————————————<br>共振效果：1.光子精华获取变为 1%。<br> 2.光子能量基础强制固定在 ×1。<br><div style='background-color:#FF2222'>夸克共振需求：夸克≥1000</div>"
+                if(!this.locked()) desc += "———————————————————————<br>如果你能在夸克共振中完成夸克坍缩，<br>你将获得上夸克！<br>(获取数量基于光子和光子共振层)<br><div style='background-color:#FF2222'>你拥有 "+formatWhole(player.Uni.coloredQuarks[this.id[2]-1])+" 上夸克。<br>第一次完成时，光子获取提升至 15 倍！<br>同时生成上夸克能量 +"+formatWhole(player.Uni.coloredQuarks[this.id[2]-1])+"/sec。</div>"
                 return desc
             },
-            canComplete: function() {return player.points.gte(100)},
             style() {
-                if(inChallenge(this.layer,this.id)) return {'background-color':'#FF6666','box-shadow':'0px 0px 6px 6px #FF6666'}
+                if(player.Uni.activeChallenge == 'qk1') return {'background-color':'#FF6666','box-shadow':'0px 0px 6px 6px #FF6666'}
                 else if(!this.locked()) return {'background-color':'#FF6666','box-shadow':'0px 0px 3px 3px #FF6666'}
                 else return {'background-color':'#888888'}
             },
             onEnter() {
-                if(this.locked()) return
-                player.Uni.quarks = player.Uni.quarks.add(layers.Uni.getQuarkGain())
-                player.Uni.photons = new Decimal(0)
-                player.Uni.photonsP = new Decimal(0)
-                player.Uni.milestones = []
-                player.Uni.photonsE = layers.Uni.getExtraPhotons()[0]
-                for(var i = 0; i <= 9; i++){
-                    setBuyableAmount("Uni",'ph'+i,n(0))
-                }
-                player.Uni.photons = n(0)
+                doQuarkReset()
+                player.Uni.activeChallenge = this.id
             },
             onExit()
             {
-
+                if(layers.Uni.getColoredQuarkGain().gte(player.Uni.coloredQuarks[this.id[2]-1])) player.Uni.coloredQuarks[this.id[2]-1] = layers.Uni.getColoredQuarkGain()
+                player.Uni.activeChallenge = ''
             },
-            effect() {
-                return player.Uni.coloredQuarks[0].root(0.75).add(1)
+        },
+        'qk2':{
+            name() {return "["+this.id+"] 下夸克"+((this.locked())?'(锁定)':(player.Uni.activeChallenge == 'qk2'?("("+format(layers.Uni.getColoredQuarkGain().sub(player.Uni.coloredQuarks[this.id[2]-1]))+")"):("(不活跃)")))},
+            text() {return "d"},
+            locked() {return player.Uni.quarks.lt(30000)&&!(player.Uni.activeChallenge == 'qk2')},
+            exp: "2",
+            color: '#22FF22',
+            challengeDescription() {
+                let desc = "↑↑点击夸克图标以开始夸克共振！<br>———————————————————————<br>共振效果：1.共振阶层不再提升光子获取，而是加倍降低光子获取。<br> 2.光子能量基础强制固定在 ×5。<br><div style='background-color:#22FF22'>夸克共振需求：夸克≥30000</div>"
+                if(!this.locked()) desc += "———————————————————————<br>如果你能在夸克共振中完成夸克坍缩，<br>你将获得下夸克！<br>(获取数量基于光子和光子共振层)<br><div style='background-color:#22FF22'>你拥有 "+formatWhole(player.Uni.coloredQuarks[this.id[2]-1])+" 下夸克。<br>第一次完成时，每秒自动获得 10% 重置可获得的夸克！(在较高数值时达到上限)<br>同时生成下夸克能量 +"+formatWhole(player.Uni.coloredQuarks[this.id[2]-1])+"/sec。</div>"
+                return desc
             },
-            onExit(){
-                
-            }
+            style() {
+                if(player.Uni.activeChallenge == 'qk2') return {'background-color':'#66FF66','box-shadow':'0px 0px 6px 6px #66FF66'}
+                else if(!this.locked()) return {'background-color':'#66FF66','box-shadow':'0px 0px 3px 3px #66FF66'}
+                else return {'background-color':'#888888'}
+            },
+            onEnter() {
+                doQuarkReset()
+                player.Uni.activeChallenge = this.id
+            },
+            onExit()
+            {
+                if(layers.Uni.getColoredQuarkGain().gte(player.Uni.coloredQuarks[this.id[2]-1])) player.Uni.coloredQuarks[this.id[2]-1] = layers.Uni.getColoredQuarkGain()
+                player.Uni.activeChallenge = ''
+            },
+            unlocked() {return player.Uni.coloredQuarks[this.id[2]-2].gte(1)}
+        },
+        'qk3':{
+            name() {return "["+this.id+"] 奇夸克"+((this.locked())?'(锁定)':(player.Uni.activeChallenge == 'qk3'?("("+format(layers.Uni.getColoredQuarkGain().sub(player.Uni.coloredQuarks[this.id[2]-1]))+")"):("(不活跃)")))},
+            text() {return "s"},
+            locked() {return player.Uni.quarks.lt(1e6)&&!(player.Uni.activeChallenge == 'qk3')},
+            exp: "3",
+            color: '#2255FF',
+            challengeDescription() {
+                let desc = "↑↑点击夸克图标以开始夸克共振！<br>———————————————————————<br>共振效果：1.共振阶层不再提升光子获取，而是超级加倍降低光子获取。<br> 2.光子溢出指数固定为x<sup>0.191981</sup>。<br>3.见上夸克的第一条效果。<div style='background-color:#2255FF'>夸克共振需求：夸克≥10<sup>6</sup></div>"
+                if(!this.locked()) desc += "———————————————————————<br>如果你能在夸克共振中完成夸克坍缩，<br>你将获得奇夸克！<br>(获取数量基于光子和光子共振层)<br><div style='background-color:#2255FF'>你拥有 "+formatWhole(player.Uni.coloredQuarks[this.id[2]-1])+" 奇夸克。<br>第一次完成时，光子溢出指数提升 +0.04！<br>同时生成奇夸克能量 +"+formatWhole(player.Uni.coloredQuarks[this.id[2]-1])+"/sec。</div>"
+                return desc
+            },
+            style() {
+                if(player.Uni.activeChallenge == 'qk3') return {'background-color':'#6688FF','box-shadow':'0px 0px 6px 6px #6688FF'}
+                else if(!this.locked()) return {'background-color':'#6688FF','box-shadow':'0px 0px 3px 3px #6688FF'}
+                else return {'background-color':'#888888'}
+            },
+            onEnter() {
+                doQuarkReset()
+                player.Uni.activeChallenge = this.id
+            },
+            onExit()
+            {
+                if(layers.Uni.getColoredQuarkGain().gte(player.Uni.coloredQuarks[this.id[2]-1])) player.Uni.coloredQuarks[this.id[2]-1] = layers.Uni.getColoredQuarkGain()
+                player.Uni.activeChallenge = ''
+            },
+            unlocked() {return player.Uni.coloredQuarks[this.id[2]-2].gte(1)}
+        },
+        'qk4':{
+            name() {return "["+this.id+"] 粲夸克"+((this.locked())?'(锁定)':(player.Uni.activeChallenge == 'qk4'?("("+format(layers.Uni.getColoredQuarkGain().sub(player.Uni.coloredQuarks[this.id[2]-1]))+")"):("(不活跃)")))},
+            text() {return "c"},
+            locked() {return player.Uni.quarks.lt('1eee6')&&!(player.Uni.activeChallenge == 'qk4')},
+            exp: "4",
+            color: '#55FFFF',
+            challengeDescription() {
+                let desc = "↑↑点击夸克图标以开始夸克共振！<br>———————————————————————<br>哦不...这个夸克被颜值爆表、超绝可爱的落猫猫宇宙女王控制了！需要无穷多的夸克才能解除封印！<div style='background-color:#55FFFF'>夸克共振需求：夸克≥10<sup>100,000,000</sup></div>"
+                if(!this.locked()) desc += "———————————————————————<br>如果你能在夸克共振中完成夸克坍缩，<br>你将获得奇夸克！<br>(获取数量基于光子和光子共振层)<br><div style='background-color:#FF55FF'>你拥有 "+formatWhole(player.Uni.coloredQuarks[this.id[2]-1])+" 奇夸克。<br>第一次完成时，光子溢出指数提升 +0.04！<br>同时生成奇夸克能量 +"+formatWhole(player.Uni.coloredQuarks[this.id[2]-1])+"/sec。</div>"
+                return desc
+            },
+            style() {
+                if(player.Uni.activeChallenge == 'qk4') return {'background-color':'#6688FF','box-shadow':'0px 0px 6px 6px #6688FF'}
+                else if(!this.locked()) return {'background-color':'#6688FF','box-shadow':'0px 0px 3px 3px #6688FF'}
+                else return {'background-color':'#888888'}
+            },
+            onEnter() {
+                doQuarkReset()
+                player.Uni.activeChallenge = this.id
+            },
+            onExit()
+            {
+                if(layers.Uni.getColoredQuarkGain().gte(player.Uni.coloredQuarks[this.id[2]-1])) player.Uni.coloredQuarks[this.id[2]-1] = layers.Uni.getColoredQuarkGain()
+                player.Uni.activeChallenge = ''
+            },
+            unlocked() {return player.Uni.coloredQuarks[this.id[2]-2].gte(1)}
         },
     }
 })
 
 function getPhotonLayerName(layer){
     return UNI_PHOTONS_ORDER[layer.div(10).floor()]+" "+n(10).sub(layer%10)+"层"
+}
+
+function doQuarkReset(){
+    player.Uni.quarks = player.Uni.quarks.add(layers.Uni.getQuarkGain())
+    player.Uni.photons = new Decimal(0)
+    player.Uni.photonsP = new Decimal(0)
+    player.Uni.milestones = []
+    player.Uni.photonsE = layers.Uni.getExtraPhotons()[0]
+    for(var i = 0; i <= 9; i++){
+        setBuyableAmount("Uni",'ph'+i,n(0))
+    }
+    player.Uni.photons = n(0)
 }
 
 addNode("P",{
@@ -1066,6 +1259,27 @@ addLayer("Ach", {
             onComplete() {return player.Ach.points = player.Ach.points.add(3)
             },
         },
+        '0-3-4':{
+            name() {return "夸克强化"},
+            tooltip() { return '完成上夸克的共振。+3苯'},
+            done() { return player.Uni.coloredQuarks[0].gte(1) }, 
+            onComplete() {return player.Ach.points = player.Ach.points.add(3)
+            },
+        },
+        '0-3-5':{
+            name() {return "η=100%"},
+            tooltip() { return '使宇宙精华永远不会被消耗。+3苯，自动购买全部的光子理论，光子精华 ×1.5'},
+            done() { return layers.Uni.buyables['qk1'].effect().lt(0.1)}, 
+            onComplete() {return player.Ach.points = player.Ach.points.add(3)
+            },
+        },
+        '0-3-6':{
+            name() {return "红外测温仪"},
+            tooltip() { return '光子共振层达到"红外线"。+3苯'},
+            done() { return player.Uni.photonsP.gte(20) }, 
+            onComplete() {return player.Ach.points = player.Ach.points.add(3)
+            },
+        },
     },
     row: 'side', // Row the layer is in on the tree (0 is the first row)
     layerShown(){return hasUpgrade('Uni','uni3')},
@@ -1107,7 +1321,8 @@ addLayer("Ach", {
                     }],
                     ["column", [["raw-html", function() {}],
                      "blank",['display-text',function(){return '<h3>[阶段0-3]-夸克<br>此阶段的每个成就都会提升 2 倍宇宙精华 '}],
-                    ['row',[["achievement",'0-3-1'],["achievement",'0-3-2'],["achievement",'0-3-3'],["achievement",'0-3-4']]],
+                    ['row',[["achievement",'0-3-1'],["achievement",'0-3-2'],["achievement",'0-3-3'],["achievement",'0-3-4'],["achievement",'0-3-5']]],
+                    ['row',[["achievement",'0-3-6'],["achievement",'0-3-7'],["achievement",'0-3-8'],["achievement",'0-3-9']]],
                     "blank",
                     ],
                     {
