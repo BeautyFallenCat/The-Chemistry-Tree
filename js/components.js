@@ -140,7 +140,7 @@ function loadVue() {
 		<div v-if="tmp[layer].challenges && tmp[layer].challenges[data]!== undefined && tmp[layer].challenges[data].unlocked && !(options.hideChallenges && maxedChallenge(layer, [data]) && !inChallenge(layer, [data]))"
 			v-bind:class="['challenge', challengeStyle(layer, data), player[layer].activeChallenge === data ? 'resetNotify' : '']" v-bind:style="tmp[layer].challenges[data].style">
 			<br><h3 v-html="tmp[layer].challenges[data].name"></h3><br><br>
-			<button v-bind:class="{ longUpg: true, can: true, [layer]: true }" v-bind:style="{'background-color': tmp[layer].color}" v-on:click="startChallenge(layer, data)">{{challengeButtonText(layer, data)}}</button><br><br>
+			<button v-bind:class="{ longUpg: true, can: true, [layer]: true }" v-bind:style="{'border-radius':'50%', 'background-color':'black', 'width':'200px','height':'200px','border-color': tmp[layer].challenges[data].locked? '#444444':tmp[layer].challenges[data].color,'font-size':'100px','color': tmp[layer].challenges[data].locked? '#444444':tmp[layer].challenges[data].color,'box-shadow':'0px 0px 10px 10px inset '+(tmp[layer].challenges[data].locked? '':tmp[layer].challenges[data].color),'transform': 'rotate(0deg)','text-decoration':tmp[layer].challenges[data].locked? 'line-through':'none'}" v-on:click="if(!tmp[layer].challenges[data].locked)startChallenge(layer, data)">{{tmp[layer].challenges[data].text}}<sub>{{tmp[layer].challenges[data].exp}}</sub></button><br><br>
 			<span v-if="layers[layer].challenges[data].fullDisplay" v-html="run(layers[layer].challenges[data].fullDisplay, layers[layer].challenges[data])"></span>
 			<span v-else>
 				<span v-html="tmp[layer].challenges[data].challengeDescription"></span><br>

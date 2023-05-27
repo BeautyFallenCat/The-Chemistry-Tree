@@ -322,6 +322,7 @@ function gameLoop(diff) {
 		tmp.gameEnded = true
 		clearParticles()
 	}
+	document.getElementById('points').innerHTML = formatHeat(player.points)
 
 	if (isNaN(diff) || diff < 0) diff = 0
 	if (tmp.gameEnded && !player.keepGoing) {

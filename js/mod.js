@@ -22,7 +22,7 @@ let changelog = `<h1>Changelog:</h1><br>
 		- Added things.<br>
 		- Added stuff.`
 
-let winText = `恭喜！你通关了目前版本的The Chimestry Tree化学树！<br>这款增量游戏是由一对化竞生哥妹联手打造的，希望各位大佬们喜欢、支持这个作品OwO，如果大家觉得不错的话化学树会持续更新哦~`
+let winText = `恭喜！你通关了目前版本的The Chimestry Tree化学树！<br>这款增量游戏是由一对化竞生哥妹联手打造的，希望各位大佬们喜欢、支持这个作品OwO，如果大家觉得不错的话化学树会持续更新哦~<br>作者：Fallen_Cat feat. PurpleMare437`
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
@@ -46,6 +46,7 @@ function getPointGen() {
 	if(hasUpgrade('Uni','uni1')) gain = gain.mul(layers.Uni.upgrades['uni1'].effect())
 	if(hasUpgrade('Uni','uni4')) gain = gain.mul(layers.Uni.upgrades['uni4'].effect())
 	if(player.Uni.feature >= 1) gain = gain.mul(layers.Uni.photonEff())
+	if(player.Uni.feature >= 2) gain = gain.mul(layers.Uni.quarkEff())
 	return gain
 }
 
