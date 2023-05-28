@@ -112,10 +112,6 @@ var systemComponents = {
 			<br>Offline Time: {{formatTime(player.offTime.remain)}}<br>
 		</span>
 		<br>
-		<span v-if="player.points.lt('1e1000')"  class="overlayThing">你的宇宙当前拥有 </span>
-		<h2  class="overlayThing" id="points"></h2>
-		<span v-if="player.points.lt('1e1e6')"  class="overlayThing"> {{modInfo.pointsName}}。</span>
-		<br>
 		<span v-if="canGenPoints()"  class="overlayThing" id = "overlayThing"></span>
 		<div v-for="thing in tmp.displayThings" class="overlayThing"><span v-if="thing" v-html="thing"></span></div>
 	</div>

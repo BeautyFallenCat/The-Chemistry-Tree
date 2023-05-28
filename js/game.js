@@ -321,8 +321,6 @@ function gameLoop(diff) {
 		tmp.gameEnded = true
 		clearParticles()
 	}
-	document.getElementById('points').innerHTML = formatHeat(player.points)
-	document.getElementById('overlayThing').innerHTML = tmp.other.oompsMag != 0 ? format(tmp.other.oomps) + " OOM" + (tmp.other.oompsMag < 0 ? "^OOM" : tmp.other.oompsMag > 1 ? "^" + tmp.other.oompsMag : "") + "s" : '+'+formatHeat(getPointGen())+"/sec"
 
 	if (isNaN(diff) || diff < 0) diff = 0
 	if (tmp.gameEnded && !player.keepGoing) {

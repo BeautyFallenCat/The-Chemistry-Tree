@@ -26,7 +26,7 @@ let winText = `恭喜！你通关了目前版本的The Chimestry Tree化学树�
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
-var doNotCallTheseFunctionsEveryTick = ["blowUpEverything"]
+var doNotCallTheseFunctionsEveryTick = ["blowUpEverything",'buy','onEnter','onExit','onComplete','base']
 
 function getStartPoints(){
     return new Decimal(modInfo.initialStartPoints)
@@ -58,6 +58,8 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
+	function(){return '你的宇宙当前拥有 '+quickBigColor(formatHeat(player.points),'#FFFFFF')+' 能量。'},
+	function(){return tmp.other.oompsMag != 0 ? format(tmp.other.oomps) + " OOM" + (tmp.other.oompsMag < 0 ? "^OOM" : tmp.other.oompsMag > 1 ? "^" + tmp.other.oompsMag : "") + "s" : '+'+formatHeat(getPointGen())+"/sec"},
 	`结局：29⌬ + 光子共振层达到 红外线10层`
 ]
 

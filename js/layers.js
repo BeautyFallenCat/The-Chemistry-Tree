@@ -93,7 +93,7 @@ addLayer("Uni", {
     clickables: {
         'f': {
             title() {return "粒子生成器<br>"},
-            display() {return "解锁一种全新的基本粒子！<br>下一个粒子: "+quickColor(UNI_PARTICLES[player.Uni.feature]+"<br><br>"+"需要宇宙精华 "+format(UNI_PARTICLES_REQ[player.Uni.feature]) , UNI_PARTICLES_COLOR[player.Uni.feature])},
+            display() {return "解锁一种全新的基本粒子！<br>下一个粒子: "+quickColor(UNI_PARTICLES[player.Uni.feature]+"<br><br>"+"需要宇宙精华 "+format(UNI_PARTICLES_REQ[player.Uni.feature]) , UNI_PARTICLES_COLOR[player.Uni.feature])+"<br>(解锁夸克实际仅需要10<sup>20</sup>宇宙精华，将在下个版本开放夸克)"},
             canClick() {return player.Uni.points.gte(UNI_PARTICLES_REQ[player.Uni.feature])},
             style(){
                 if(layers.Uni.clickables[this.layer,this.id].canClick()) return {'box-shadow':'inset 0px 0px 5px '+(player.timePlayed%2+5)+'px '+UNI_PARTICLES_COLOR[player.Uni.feature], 'background-color':'black', 'color':'white', 'height':'200px', 'width':'200px', 'font-size':'13px' }
