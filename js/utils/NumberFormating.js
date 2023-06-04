@@ -73,7 +73,7 @@ function format(decimal, precision = 2, small) {
 function formatHeat(decimal) {
     decimal = new Decimal(decimal)
     if (decimal.gte(Decimal.pow(10,1e9))) return format(decimal.div(Decimal.pow(10,1e9)), 2)+" Qmlt"
-    if (decimal.gte(1e80)) return format(decimal.div(1e80), 2)+" Q"+"uni".sub()
+    if (decimal.gte(1e80)) return format(decimal.div(1e80), 2)+" Q"+"universe".sub()
     if (decimal.gte(6e52)) return format(decimal.div(6e52), 2)+" Q"+"galaxy".sub()
     if (decimal.gte(2e31)) return format(decimal.div(2e31), 2)+" Q"+"sun".sub()
     if (decimal.gte(1e27)) return format(decimal.div(2e29), 2)+"% Q"+"sun".sub()

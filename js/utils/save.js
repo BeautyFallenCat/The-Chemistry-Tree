@@ -228,7 +228,7 @@ function loadOptions() {
 
 function setupModInfo() {
 	modInfo.changelog = changelog;
-	modInfo.winText = winText ? winText : `Congratulations! You have reached the end and beaten this game, but for now...`;
+	modInfo.winText = winText ? winText : `恭喜! 您达到了游戏的终点, 但是是暂时的...`;
 
 }
 function fixNaNs() {
@@ -245,7 +245,7 @@ function NaNcheck(data) {
 			if (!NaNalert) {
 				clearInterval(interval);
 				NaNalert = true;
-				alert("Invalid value found in player, named '" + item + "'. Please let the creator of this mod know! You can refresh the page, and you will be un-NaNed.")
+				alert("存档中找到了错误数据, 数据名为 '" + item + "'. 请让本树的作者知道! 您可以刷新页面, 本树在刷新后会尽量修复错误.")
 				return
 			}
 		}
@@ -258,7 +258,7 @@ function NaNcheck(data) {
 }
 function exportSave() {
 	//if (NaNalert) return
-	let str = btoa(JSON.stringify(player));
+	let str = btoa(unescape(encodeURIComponent(JSON.stringify(player))));
 
 	const el = document.createElement("textarea");
 	el.value = str;
@@ -270,10 +270,10 @@ function exportSave() {
 }
 function importSave(imported = undefined, forced = false) {
 	if (imported === undefined)
-		imported = prompt("Paste your save here");
+		imported = prompt("在这里黏贴你的存档!");
 	try {
 		tempPlr = Object.assign(getStartPlayer(), JSON.parse(atob(imported)));
-		if (tempPlr.versionType != modInfo.id && !forced && !confirm("This save appears to be for a different mod! Are you sure you want to import?")) // Wrong save (use "Forced" to force it to accept.)
+		if (tempPlr.versionType != modInfo.id && !forced && !confirm("这个存档来自别的树! 你确定要导入吗?")) // Wrong save (use "Forced" to force it to accept.)
 			return;
 		player = tempPlr;
 		player.versionType = modInfo.id;

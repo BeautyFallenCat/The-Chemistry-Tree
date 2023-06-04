@@ -3,7 +3,7 @@ var needCanvasUpdate = true;
 
 // Don't change this
 const TMT_VERSION = {
-	tmtNum: "114.514.1919.810",
+	tmtNum: "2.Π",
 	tmtName: ">>><<<"
 }
 
