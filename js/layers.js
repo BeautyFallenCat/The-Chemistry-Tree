@@ -18,6 +18,9 @@ addLayer("Uni", {
         coloredQuarks: [new Decimal(0),new Decimal(0),new Decimal(0),new Decimal(0),new Decimal(0),new Decimal(0)],
         coloredQuarksE: [new Decimal(0),new Decimal(0),new Decimal(0),new Decimal(0),new Decimal(0),new Decimal(0)],
         totalQuarks: new Decimal(1),
+        positive: new Decimal(0),
+        negative: new Decimal(0),
+        charge: new Decimal(50),
         feature: 0,
         content: '',
     }},
@@ -199,6 +202,34 @@ addLayer("Uni", {
                 }
                 player.Uni.photons = n(0)
                 
+            },
+            unlocked(){
+                return true
+            }
+        },
+        'eleci': {
+            title() {return "+"},
+            canClick() {return player.Uni.charge.lt(99)},
+            style(){
+                if(layers.Uni.clickables[this.layer,this.id].canClick()) return {'background-color':'#000000', 'color':'white','border-color':'#33ff33','box-shadow':'inset 0px 0px 5px 5px #33ff33', 'height':'60px', 'width':'60px' , 'font-size':'13px' , 'border-radius':'5px'}
+                else return {'height':'60px', 'width':'60px' , 'font-size':'13px', 'border-radius':'5px'}
+            },
+            onClick() { 
+                player.Uni.charge = player.Uni.charge.add(5)
+            },
+            unlocked(){
+                return true
+            }
+        },
+        'elecd': {
+            title() {return "-"},
+            canClick() {return player.Uni.charge.gt(1)},
+            style(){
+                if(layers.Uni.clickables[this.layer,this.id].canClick()) return {'background-color':'#000000', 'color':'white','border-color':'#3333ff','box-shadow':'inset 0px 0px 5px 5px #3333ff', 'height':'60px', 'width':'60px' , 'font-size':'13px' , 'border-radius':'5px'}
+                else return {'height':'60px', 'width':'60px' , 'font-size':'13px', 'border-radius':'5px'}
+            },
+            onClick() { 
+                player.Uni.charge = player.Uni.charge.sub(5)
             },
             unlocked(){
                 return true
@@ -865,6 +896,17 @@ addLayer("Uni", {
             unlocked() {return player.Uni.activeChallenge == 'qk4'},
         },
     },
+    bars: {
+        'electrons': {
+            direction: RIGHT,
+            width: 600,
+            height: 40,
+            progress() { return player.Uni.charge.div(100) },
+            fillStyle() { return {'background-color':'#33FF33'}},
+            baseStyle() { return {'background-color':'#3333FF'}},
+            style(){return {'box-shadow':'0px 0px 3px 3px #33FF33'}}
+        },
+    },
     milestones: {
         'ph1': {
             requirementDescription() {return quickColor("光子共振层达到 "+getPhotonLayerName(this.req)+" ("+formatWhole(n(player.Uni.photonsP).div(tmp.Uni.milestones[this.id].req).mul(100).min(100))+"%)",hasMilestone(this.layer,this.id)?'green':'')},
@@ -1078,6 +1120,10 @@ addLayer("Uni", {
             ['display-text',function(){return quickBigColor("[光子共振层："+getPhotonLayerName(player.Uni.photonsP)+"]",UNI_PHOTONS_COLOR[player.Uni.photonsP.div(10).floor()])}],
             "blank",
             ['display-text',function(){return "你拥有 "+quickBigColor(formatWhole(layers.Uni.getElecGain()),"yellowgreen")+" 电子(基于能量自动生成)，自身加成夸克获取。"}],
+            "blank",
+            ['row',[['clickable','elecd'],['bar','electrons'],['clickable','eleci']]],
+            "blank",
+            ["row", [["column", [["raw-html", function() { return "<h3>正电荷: " }], "blank"], {"background-color": "#33FF33", color: "black", width: "22vw", padding: "10px", margin: "0 auto", "height": "250px"}], ["column", [["raw-html", function() { return "<h3>负电荷： " }], "blank"], {"background-color": "#3333FF", color: "black", width: "22vw", padding: "10px", margin: "0 auto", "height": "250px"}]]], "blank",
         ],
         buttonStyle() {return {'border-radius':'5px','background': 'radial-gradient(circle at center, yellowgreen 0, green 100%)', 'box-shadow': '2px 2px 5px green','border-color':'green'}},
         unlocked() {return player.Uni.feature >= 3},
@@ -1528,8 +1574,8 @@ addLayer("Ach", {
         },
         '0-3-5':{
             name() {return "η=100%"},
-            tooltip() { return '使宇宙精华永远不会被消耗。+3苯，自动购买全部的光子理论，光子精华 ×1.5'},
-            done() { return layers.Uni.buyables['qk1'].effect().lt(0.1)}, 
+            tooltip() { return '使光子精华永远不会被消耗。+3苯，自动购买全部的光子理论，光子精华 ×1.5'},
+            done() { return layers.Uni.buyables['qk1'].effect().lt(0.05)}, 
             onComplete() {return player.Ach.points = player.Ach.points.add(3)
             },
         },
@@ -1556,7 +1602,7 @@ addLayer("Ach", {
         },
         '0-4-1':{
             name() {return "Infinite Heaven"},
-            tooltip() { return '光子共振层达到"黄光"。+5苯'},
+            tooltip() { return '光子共振层达到"黄光"。+5苯，在电子层下解锁更多内容，并解锁 环己烷'},
             done() { return player.Uni.photonsP.gte(40) }, 
             onComplete() {return player.Ach.points = player.Ach.points.add(5)
             },
@@ -1639,6 +1685,87 @@ addLayer("Ach", {
             },
         },
 })
+addLayer("Mini", {
+    name: "⬡", // This is optional, only used in a few places, If absent it just uses the layer id.
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+        coolDown: new Decimal(0),
+        score:[],
+        question01: '答案',
+    }},
+    color: "purple",
+    resource: "⬡",
+    symbol(){return "⬡"},
+    effectDescription(){return '下一次进行答题还需要 '+quickBigColor(formatTime(player.Mini.coolDown),'purple')},
+    nodeStyle(){
+        return {
+            "border-color":"purple",
+            "border-width":"3px",
+            "background": "linear-gradient(135deg,purple 6%, magenta 81%)",
+            "height": "70px",
+            "width": "70px",
+        }
+    },
+    clickables: {
+        'question1': {
+            title() {return "验证"},
+            canClick() {return player.Mini.coolDown.lt(0.1)},
+            style(){
+                if(layers.Mini.clickables[this.layer,this.id].canClick()) return {'box-shadow':'inset 0px 0px 2px '+(player.timePlayed%2+5)+'px white', 'background-color':'black', 'color':'white', 'height':'60px', 'width':'100px', 'font-size':'13px' }
+                else return {'height':'60px', 'width':'100px' , 'font-size':'13px'}
+            },
+            onClick() { 
+            if(player.Mini.question01.toLowerCase()=='acd') player.Mini.score[1] = 3 
+            else if(player.Mini.question01.toLowerCase()=='ac'||player.Mini.question01.toLowerCase()=='ad'||player.Mini.question01.toLowerCase()=='cd'||player.Mini.question01.toLowerCase()=='a'||player.Mini.question01.toLowerCase()=='c'||player.Mini.question01.toLowerCase()=='d') player.Mini.score[1] = 1
+            else player.Mini.score[1] = 0
+            player.Mini.coolDown = new Decimal(300)
+        },
+            unlocked(){
+                return true
+            }
+        },
+    },
+    update(diff){
+        if(player.Mini.coolDown.gt(0)) player.Mini.coolDown = player.Mini.coolDown.sub(diff).max(0)
+        player.Mini.points = calcTotalHuanJiWan()
+    },
+    row: 'side', // Row the layer is in on the tree (0 is the first row)
+    layerShown(){return hasAchievement('Ach','0-4-1')},
+    tabFormat:{
+        "问题1":{
+                content:[
+                    "main-display",
+                    "blank",
+                    ['display-text',function(){return '所有电荷获取 '+quickBigColor('×'+(1+player.Mini.score[1]/100||1),'yellowgreen')}],
+                    "blank",
+                    ['display-text',function(){return '<image src="pictures/question1.jpg" style="height:400px;width:700px"></image> '}],
+                    "blank",
+                    ['textBox','question01'],
+                    ['display-text',function(){return '↑这是你的答题区域！请输入您此题的答案，如"AB" "ABC" "ADE"等，没有把握切忌不要多选，记住，贪多嚼不烂...'}],
+                    ['clickable','question1']
+                ],
+                buttonStyle() {return {"color":"#FFFFFF",
+                "border-radius":"5px",
+                "border-color":"#FFFFFF",
+                "border-width":"2px",
+                "background":"#000000",
+                "background-image":
+                "linear-gradient(#000 15px,transparent 0),linear-gradient(90deg,white 1px,transparent 0)",
+                "background-size":"16px 16px,16px 16px",
+                "box-shadow":"2px 2px 2px white"
+                }}
+            },
+        },
+})
+function calcTotalHuanJiWan(){
+    let count = 0
+    for(var i = 0; i<= player.Mini.score.length; i++){
+        if(player.Mini.score[i]!=undefined) count += player.Mini.score[i]
+    }
+    return n(count)
+}
 addLayer("H", {
     name: "氢", // This is optional, only used in a few places, If absent it just uses the layer id.
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
